@@ -172,13 +172,12 @@ def order_processor_node(state: State) -> State:
     return state
 ```
 
-El componente clave de esta implementación es el uso de "structured output", una característica que permite configurar los modelos de lenguaje para que devuelvan datos en formatos predefinidos y validados.
-En el nodo order_processor_node, el sistema recibe el mensaje del usuario y lo procesa utilizando una configuración especial del modelo. Al invocar llm.with_structured_output(OrderRequest), estamos indicando al modelo que debe producir una respuesta que se ajuste exactamente a la estructura definida en la clase OrderRequest, típicamente implementada con Pydantic.
+El componente clave de esta implementación es el uso de **"structured output"**, una característica que permite configurar los modelos de lenguaje para que devuelvan datos en formatos predefinidos y validados.
+En el nodo **order_processor_node**, el sistema recibe el mensaje del usuario y lo procesa utilizando una configuración especial del modelo. Al invocar **llm.with_structured_output(OrderRequest)**, estamos indicando al modelo que debe producir una respuesta que se ajuste exactamente a la estructura definida en la clase OrderRequest, típicamente implementada con Pydantic.
 Este enfoque elimina la necesidad de escribir prompts complejos o analizar texto libre, ya que el modelo se encarga de extraer y estructurar automáticamente la información relevante. Una vez procesado el mensaje, los datos extraídos se almacenan en el estado del flujo de trabajo como un diccionario, permitiendo que otros componentes del sistema accedan a esta información para continuar con el procesamiento de la orden.
 La principal ventaja de este método es la robustez: al utilizar esquemas predefinidos, se garantiza la consistencia de los datos extraídos y se minimiza la posibilidad de errores de interpretación, haciendo que el sistema sea más confiable incluso cuando maneja solicitudes expresadas de formas variadas o ambiguas.
 
-El esquema que queremos ajustar es el que se muestra acontinuacion.
-
+El esquema que queremos ajustar es el que se muestra a continuación:
 ```python
 # Define data models
 class PaymentMethod(str, Enum):
@@ -236,7 +235,7 @@ def message_type_router(state: State) -> str:
         logger.warning(f"Unknown message type: {state['message_type']}")
         return "question_processor_node"  # Default fallback
 ```
-El componente message_type_router funciona como un distribuidor de tráfico en el flujo de trabajo de LangGraph. Examina el valor de state["message_type"] y, basándose en esta clasificación, determina cuál será el siguiente nodo a ejecutar.
+El componente message_type_router funciona como un distribuidor de tráfico en el flujo de trabajo de LangGraph. Examina el valor de **state["message_type"]** y, basándose en esta clasificación, determina cuál será el siguiente nodo a ejecutar.
 Si el mensaje es una orden ("ORDER"), dirige el flujo hacia el procesador de órdenes. Si es una pregunta ("QUESTION"), lo envía al procesador de preguntas. Para cualquier otro tipo no reconocido, registra una advertencia y utiliza el procesador de preguntas como opción predeterminada.
 Este mecanismo permite que el sistema responda de manera específica según el tipo de solicitud, aplicando el procesamiento más adecuado para cada caso.
 
@@ -312,9 +311,9 @@ La línea `graph = StateGraph(State)` crea un nuevo **grafo de estado**, usando 
 
 ## Ejecución
 
-Para ejecutar un grafo de Langgraph necesitamos llamar al metodo invoke. Con esto desencadenamos todo el workflow que hemos construido hasta ahora. 
+Para ejecutar un grafo de LangGraph, necesitamos llamar al método invoke. Con esto, se desencadena todo el workflow que hemos construido hasta ahora.
 
-Por ejemplo, ejecutemos el grafo con una solicitud de orden.
+Por ejemplo, ejecutemos el grafo con una solicitud de orden:
 > Buenas tardes, quisiera hacer un pedido del restaurante 'El Sabor Casero' para entrega a domicilio. Mi dirección es Calle Robles #42, Apartamento 3B, Colonia Centro. El pedido consiste en 2 hamburguesas clásicas, 1 orden de papas fritas grandes, 1 ensalada César y 2 refrescos de cola medianos. Mi número de contacto es 555-123-4567. Prefiero pagar con tarjeta de crédito al momento de la entrega. ¿Podrían entregarlo lo antes posible? Gracias. 
 
 ```python
@@ -322,7 +321,7 @@ Por ejemplo, ejecutemos el grafo con una solicitud de orden.
 
 ```
 
-El resultado seria el siguiente:
+El resultado sería el siguiente:
 ```sh
  restaurant_service - INFO - Building restaurant service workflow
  restaurant_service - INFO - Workflow compiled successfully
@@ -385,7 +384,7 @@ if __name__ == "__main__":
 
 Este código implementa un servicio web con FastAPI, un framework de Python para desarrollar APIs web de forma rápida y sencilla.
 
-El programa comienza definiendo un puerto de red para el servidor. Busca este valor en las variables de entorno del sistema operativo con la clave "PORT", y si no la encuentra, usa el valor predeterminado 8900. Luego importa las bibliotecas necesarias: FastAPI para crear la API, HTTPException para manejar errores, BaseModel para definir modelos de datos, y uvicorn que actuará como servidor web.
+Se importan las bibliotecas necesarias: FastAPI para crear la API, HTTPException para manejar errores, BaseModel para definir modelos de datos, y uvicorn que actuará como servidor web.
 
 Después crea una instancia de FastAPI y define un modelo de datos llamado "Message" que especifica la estructura que deben tener los mensajes entrantes, que consiste simplemente en un campo de texto.
 El núcleo del servicio es un punto de acceso (endpoint) que responde a solicitudes POST en la ruta "/message/". Cuando recibe un mensaje, el servicio construye un "workflow" (aunque la función build_workflow() no está definida en este fragmento) y le pasa el contenido del mensaje recibido. Si el proceso se ejecuta correctamente, devuelve la respuesta del workflow al cliente. Si ocurre algún error durante este proceso, captura la excepción y responde con un error HTTP 400.
@@ -394,7 +393,88 @@ Finalmente, el código verifica si el script se está ejecutando directamente (n
 
 ## Cuemby Cloud Platform
 
-En el repositorio tenemos dos archivos importantes: Dockerfile y agent.py. Uno es un Dockerfile sencillo para desplegar una aplicacion HTTP.
-
+En el repositorio tenemos tres archivos importantes: Dockerfile, requirements.txt y agent.py. El primero es un Dockerfile sencillo para desplegar una aplicación HTTP. En requirements.txt se encuentran los paquetes a instalar y, finalmente, en agent.py se encuentra el código que hemos ido construyendo.
 Para crear su cuenta en Cuemby Platform puede dirigirse a [console.cuemby.com](https://console.cuemby.io/) y seguir los siguientes pasos para crear un runtime https://www.cuemby.com/en-us/developer-hub/docs/deploy-your-first-application
 
+![alt text](image-1.png)
+
+Es importante asignar las variables de entorno *PORT* y *OPEN_AI_KEY* para que funcione correctamente.
+Una vez desplegada nuestra aplicación podemos dirigirnos la ruta /docs 
+
+Ahora, probmenos nuestro endpoint.
+
+![alt text](image-2.png)
+
+El resultado es:
+```sh
+{
+  "message": {
+    "message_type": "QUESTION",
+    "user_response": "El restaurante abre sus puertas a las 9:00 AM todos los días. Si necesita más ayuda, será atendido por soporte técnico en breve.",
+    "message_content": "¿A qué horas abren el restaurante?"
+  }
+}```
+
+
+![alt text](image-3.png)
+
+El resultado es:
+
+```sh
+{
+  "message": {
+    "message_type": "ORDER",
+    "extraction": {
+      "order_id": null,
+      "restaurant": "El Sabor Casero",
+      "request_date": "2023-11-01",
+      "delivery_address": "Calle Robles #42, Apartamento 3B, Colonia Centro",
+      "items": [
+        {
+          "name": "Hamburguesa Clásica",
+          "quantity": 2,
+          "notes": null,
+          "unit_price": null
+        },
+        {
+          "name": "Papas Fritas Grandes",
+          "quantity": 1,
+          "notes": null,
+          "unit_price": null
+        },
+        {
+          "name": "Ensalada César",
+          "quantity": 1,
+          "notes": null,
+          "unit_price": null
+        },
+        {
+          "name": "Refresco de Cola Mediano",
+          "quantity": 2,
+          "notes": null,
+          "unit_price": null
+        }
+      ],
+      "contact": "555-123-4567",
+      "payment_method": "credit_card",
+      "express_delivery": true,
+      "additional_notes": null
+    },
+    "message_content": "Buenas tardes, quisiera hacer un pedido del restaurante 'El Sabor Casero' para entrega a domicilio. Mi dirección es Calle Robles #42, Apartamento 3B, Colonia Centro. El pedido consiste en 2 hamburguesas clásicas, 1 orden de papas fritas grandes, 1 ensalada César y 2 refrescos de cola medianos. Mi número de contacto es 555-123-4567. Prefiero pagar con tarjeta de crédito al momento de la entrega. ¿Podrían entregarlo lo antes posible? Gracias."
+  }
+}
+
+```
+
+
+# Conclusiones
+
+El desarrollo de agentes inteligentes marca una evolución significativa en la forma en que interactuamos con sistemas automatizados. En este ejemplo, construimos un agente de servicio al cliente capaz de distinguir entre órdenes de comida y consultas generales, extrayendo información estructurada de forma precisa y ofreciendo respuestas contextuales.
+
+Gracias a herramientas como LangGraph, el diseño de agentes basados en grafos de estado se vuelve intuitivo y escalable. Este enfoque no solo facilita la separación de responsabilidades por nodos, sino que también permite una trazabilidad clara del flujo de trabajo y una integración sencilla con modelos de lenguaje como GPT-4o.
+
+Además, la implementación y despliegue en Cuemby Platform demuestra lo sencillo que puede ser llevar un agente de IA a producción. Cuemby proporciona un entorno ideal para ejecutar y escalar aplicaciones modernas, integrando buenas prácticas de desarrollo cloud-native sin complicaciones adicionales.
+
+Con esta arquitectura modular y robusta, el sistema puede ser fácilmente ampliado para manejar más tipos de solicitudes, integrar validaciones de datos, o conectarse con bases de datos y APIs externas.
+
+En definitiva, este proyecto muestra cómo combinar frameworks de última generación con plataformas modernas para crear soluciones de IA útiles, escalables y listas para producción.
