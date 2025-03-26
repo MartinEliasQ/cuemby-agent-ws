@@ -413,7 +413,8 @@ El resultado es:
     "user_response": "El restaurante abre sus puertas a las 9:00 AM todos los días. Si necesita más ayuda, será atendido por soporte técnico en breve.",
     "message_content": "¿A qué horas abren el restaurante?"
   }
-}```
+}
+ ```
 
 
 ![alt text](image-3.png)
